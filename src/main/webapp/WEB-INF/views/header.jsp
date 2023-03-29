@@ -26,7 +26,6 @@
                 <td>
                     <form action="toProfilePage" method="post">
                         <input type="hidden" id="userId" name="userId" value=${user.id}>
-                        <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                         <input type="image" title="PROFILE" src="/resources/img/user.png"  height="35" width="35"
                         onMouseOver="this.src='/resources/img/user_hover.png';" onMouseOut="this.src='/resources/img/user.png';">
                     </form>
@@ -41,7 +40,6 @@
                 <td>
                     <form action="toHomePage" method="post">
                         <input type="hidden" id="userId" name="userId" value=${user.id}>
-                        <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                         <input type="image" title="HOME PAGE" src="/resources/img/home.png"  height="35" width="35"
                             onMouseOver="this.src='/resources/img/home_hover.png';" onMouseOut="this.src='/resources/img/home.png';">
                     </form>

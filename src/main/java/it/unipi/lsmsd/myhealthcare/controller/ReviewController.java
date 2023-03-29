@@ -1,11 +1,11 @@
 package it.unipi.lsmsd.myhealthcare.controller;
 
-import it.unipi.lsmsd.myhealthcare.dao.ReviewDao;
-import it.unipi.lsmsd.myhealthcare.dao.StructureDao;
+import it.unipi.lsmsd.myhealthcare.dao.*;
 import it.unipi.lsmsd.myhealthcare.model.*;
-import it.unipi.lsmsd.myhealthcare.mongo.repository.*;
-import it.unipi.lsmsd.myhealthcare.userSession.UserSession;
-import it.unipi.lsmsd.myhealthcare.utility.Utility;
+import it.unipi.lsmsd.myhealthcare.repository.*;
+import it.unipi.lsmsd.myhealthcare.service.ReviewUtility;
+import it.unipi.lsmsd.myhealthcare.session.UserSession;
+import it.unipi.lsmsd.myhealthcare.service.Utility;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,34 +14,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class ReviewController {
     private final StructureRepository STRUCTURE_REPOSITORY;
-    private final CityRepository CITY_REPOSITORY;
     private final UserRepository USER_REPOSITORY;
-    private final ReviewRepository REVIEW_REPOSITORY;
 
-    public ReviewController(
-            StructureRepository structureRepository,
-            CityRepository cityRepository,
-            UserRepository userRepository,
-            ReviewRepository reviewRepository){
+    public ReviewController(StructureRepository structureRepository,
+                            UserRepository userRepository){
         this.STRUCTURE_REPOSITORY = structureRepository;
-        this.CITY_REPOSITORY = cityRepository;
         this.USER_REPOSITORY = userRepository;
-        this.REVIEW_REPOSITORY = reviewRepository;
     }
 
     @PostMapping("/toMyReviews")
     public String toMyReviews(
             @RequestParam("userId") String userId,
-            @RequestParam("cryptedPassword") String cryptedPassword,
             ModelMap model) {
         System.out.println("ReviewController.toMyReviews");
-        User user = UserSession.getUser(userId, cryptedPassword);
+        User user = UserSession.getUser(userId);
         if(user == null)
             return "index";
-        System.out.println("START search user reviews " + Utility.getNow());
-        model.put("list", Utility.sortReviews(
-                ReviewDao.readByUser(user, REVIEW_REPOSITORY, STRUCTURE_REPOSITORY, CITY_REPOSITORY),false));
-        System.out.println("END search user reviews " + Utility.getNow());
+        System.out.println("user reviews " + user.getReviews().size());
+        model.put("list", ReviewUtility.sortUserReviews(user.getReviews(),false));
         model.addAttribute("user", user);
         return "user_reviews";
     }
@@ -50,19 +40,52 @@ public class ReviewController {
     public String toStructureReviews(
             @RequestParam("structureId") String structureId,
             @RequestParam("userId") String userId,
-            @RequestParam("cryptedPassword") String cryptedPassword,
             ModelMap model) {
         System.out.println("ReviewController.toStructureReviews " + structureId);
-        User user = UserSession.getUser(userId, cryptedPassword);
+        User user = UserSession.getUser(userId);
         if(user == null)
             return "index";
-        Structure structure = StructureDao.fromMongoNoServices(
-                StructureDao.readById(structureId, STRUCTURE_REPOSITORY),
-                CITY_REPOSITORY);
-        model.put("list", Utility.sortReviews(ReviewDao.readByStructure(
-                structure, REVIEW_REPOSITORY, USER_REPOSITORY, CITY_REPOSITORY),false));
+        Structure structure = StructureDao.fromDTO(
+                StructureDao.readById(structureId, STRUCTURE_REPOSITORY));
         model.addAttribute("structureName", structure.getName());
+        model.addAttribute("structureId", structure.getId());
+        System.out.println("START get average of the reviews " + Utility.getNow());
+        model.addAttribute("average", Utility.roundFloat(
+                StructureDao.getAverageOfReviewsByStructure(structure.getId(), STRUCTURE_REPOSITORY)));
+        System.out.println("END get average of the reviews " + Utility.getNow());
+        System.out.println("START group structure reviews per rating " + Utility.getNow());
+        model.addAttribute("reviews",
+                StructureDao.getReviewsPerRatingByStructure(structure.getId(), STRUCTURE_REPOSITORY));
+        System.out.println("END group structure reviews per rating " + Utility.getNow());
+        model.addAttribute("list", ReviewUtility.sortStructureReviews(structure.getReviews(), false));
         model.addAttribute("user", user);
         return "structure_reviews";
+    }
+
+
+    @PostMapping("/review")
+    public String review(
+            @RequestParam("userId") String userId,
+            @RequestParam("provenance") String provenance,
+            @RequestParam("bookingCode") String bookingCode,
+            @RequestParam("rating") String rating,
+            @RequestParam("text") String text,
+            ModelMap model) {
+        System.out.println("BookingController.review " + bookingCode + ", " + rating);
+        User user = UserSession.getUser(userId);
+        if(user == null)
+            return "index";
+        model.addAttribute("user", user);
+        UserBooking booking = user.getBookingByCode(bookingCode);
+        model.addAttribute("booking", booking);
+        Review review = new Review();
+        review.setRating(Integer.valueOf(rating));
+        review.setText(text);
+        review.setDate(Utility.getToday());
+        ReviewUtility.saveReview(review, booking.getStructure(), user);
+        user = UserDao.fromDTO(UserDao.readById(userId, USER_REPOSITORY));
+        UserSession.refreshUser(user);
+        model.addAttribute("message", "review successfully saved");
+        return "booking_management";
     }
 }

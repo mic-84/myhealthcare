@@ -24,21 +24,18 @@
         <div align="center">
             <form action="toSearchStructures" method="post">
                 <input type="hidden" id="userId" name="userId" value=${user.id}>
-                <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                 <input type="submit" value="SEARCH STRUCTURES" class="button">
             </form>
         </div>
         <br/><div align="center">
             <form action="toMyBookings" method="post">
                 <input type="hidden" id="userId" name="userId" value=${user.id}>
-                <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                 <input type="submit" value="MY BOOKINGS" class="button">
             </form>
         </div>
         <br/><div align="center">
             <form action="toMyReviews" method="post">
                 <input type="hidden" id="userId" name="userId" value=${user.id}>
-                <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                 <input type="submit" value="MY REVIEWS" class="button">
             </form>
         </div>

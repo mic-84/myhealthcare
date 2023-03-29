@@ -12,7 +12,6 @@
     <div align="right">
         <form action="toChangePassword" method="post">
             <input type="hidden" id="userId" name="userId" value=${user.id}>
-            <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
             <input type="submit" value="CHANGE PASSWORD" class="button">
         </form>
     </div>
@@ -20,7 +19,6 @@
     <div align="center">
         <form action="updateProfile" method="post" onsubmit="return validateUpdateProfile()">
             <input type="hidden" id="userId" name="userId" value=${user.id}>
-            <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
             <table>
                 <tr><td>first name</td><td><input id="firstname" name="firstname" value=${user.firstName}></td></tr>
                 <tr><td>last name</td><td><input id="lastname" name="lastname" value=${user.lastName}></td></tr>

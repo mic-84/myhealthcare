@@ -13,10 +13,9 @@
         <table>
             <tr>
                 <td>
-                    <form action="bookingsPerStructure" method="post">
+                    <form action="toAdminStatistics" method="post">
                         <input type="hidden" id="userId" name="userId" value=${user.id}>
-                        <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
-                        <input type="submit" value="BOOKINGS PER STRUCTURE" class="button">
+                        <input type="submit" value="STATISTICS" class="button">
                     </form>
                 </td>
             </tr>
@@ -24,7 +23,6 @@
                 <td>
                     <form action="toNewService" method="post">
                         <input type="hidden" id="userId" name="userId" value=${user.id}>
-                        <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                         <input type="submit" value="NEW SERVICE" class="button">
                     </form>
                 </td>

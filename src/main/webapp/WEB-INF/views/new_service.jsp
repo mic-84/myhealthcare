@@ -14,7 +14,6 @@
         <div align="center">
             <form action="newService" method="post">
                 <input type="hidden" id="userId" name="userId" value=${user.id}>
-                <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
                 <table>
                     <tr><td>code</td><td><input id="code" name="code"></td></tr>
                     <tr><td>name</td><td><input id="name" name="name"></td></tr>

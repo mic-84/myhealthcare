@@ -1,6 +1,6 @@
 package it.unipi.lsmsd.myhealthcare.databaseConnection;
 
-import it.unipi.lsmsd.myhealthcare.utility.PropertiesManager;
+import it.unipi.lsmsd.myhealthcare.service.PropertiesManager;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -11,47 +11,47 @@ public class RedisConnectionManager {
     private JedisPool pool;
     private Jedis jedis;
     private final String NAMESPACE = PropertiesManager.redisNamespace;
-    private String userId, type, mainKey;
+    private String mainKey;
 
-    public RedisConnectionManager(String userId, String type, boolean replica){
-        this.userId = userId;
-        if(!replica)
-            pool = new JedisPool(PropertiesManager.redisHost, PropertiesManager.redisPort);
-        else
+    public RedisConnectionManager(String userId, String type, Integer time){
+        pool = new JedisPool(PropertiesManager.redisHost, PropertiesManager.redisPort);
+        if(pool == null)
             pool = new JedisPool(PropertiesManager.redisReplicaHost, PropertiesManager.redisPort);
         jedis = pool.getResource();
-        mainKey = getMainKey(userId, type);
-        if(!replica)
-            jedis.set(mainKey, String.valueOf(System.currentTimeMillis()));
-        this.type = type;
+        if(type != null) {
+            mainKey = getMainKey(userId, type);
+            if(time != null) {
+                jedis.set(mainKey, String.valueOf(System.currentTimeMillis()));
+                setExpirationTime(mainKey, time, type);
+            }
+        }
         System.out.println("connected to Redis");
-        setExpirationCountdown(mainKey);
     }
 
     private String getMainKey(String userId, String type) {
         return NAMESPACE + ":" + userId + ":" + type;
     }
 
-    public void setExpirationCountdown(String key){
+    public void setExpirationTime(String key, Integer time, String type){
         if(!type.equals("user")) {
-            jedis.expire(key, PropertiesManager.redisBookingExpirationTime);
+            jedis.expire(key, time);
             System.out.println("key " + key + " will expire in " + jedis.ttl(key) + " seconds...");
         }
     }
 
-    public void addItem(String item, String type){
+    public void addItem(String userId, String item, String type, String keyToExpire, Integer time){
         if(!isExpired()) {
-            String key = NAMESPACE + ":" + userId + ":" + type + ":" + countItems(type);
+            String key = NAMESPACE + ":" + userId + ":" + type;
             jedis.set(key, item);
-            setExpirationCountdown(mainKey);
-            for(Map.Entry<String, String> map: getValues(type).entrySet())
-                setExpirationCountdown(map.getKey());
+            setExpirationTime(keyToExpire, time, type);
+            for(Map.Entry<String, String> map: getValues(userId, type).entrySet())
+                setExpirationTime(map.getKey(), time, type);
             System.out.println(key + "            - " + item + " added to redis");
         } else
             closeConnection();
     }
 
-    public Map<String, String> getValues(String type){
+    public Map<String, String> getValues(String userId, String type){
         Map<String, String> values = new HashMap<String, String>();
         if(!isExpired()) {
             for (String key : jedis.keys(NAMESPACE + ":" + userId + ":" + type + "*"))
@@ -59,10 +59,6 @@ public class RedisConnectionManager {
         } else
             closeConnection();
         return values;
-    }
-
-    public int countItems(String type){
-        return getValues(type).size();
     }
 
     public long remainingTime(){
@@ -73,12 +69,16 @@ public class RedisConnectionManager {
         return remainingTime() <= 0;
     }
 
-    public void addItemByKey(String key, String item){
+    public void setItemByKey(String key, String item){
         jedis.set(NAMESPACE + ":" + key, item);
     }
 
     public String getItemByKey(String key){
         return jedis.get(NAMESPACE + ":" + key);
+    }
+
+    public boolean existsKey(String key){
+        return getItemByKey(key) != null;
     }
 
     public void removeItemByKey(String key){

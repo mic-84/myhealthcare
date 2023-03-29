@@ -2,22 +2,19 @@ package it.unipi.lsmsd.myhealthcare;
 
 import it.unipi.lsmsd.myhealthcare.controller.*;
 import it.unipi.lsmsd.myhealthcare.dao.*;
-import it.unipi.lsmsd.myhealthcare.databaseConnection.RedisConnectionManager;
+import it.unipi.lsmsd.myhealthcare.databaseConnection.MongoConnectionManager;
 import it.unipi.lsmsd.myhealthcare.model.*;
-import it.unipi.lsmsd.myhealthcare.mongo.repository.*;
-import it.unipi.lsmsd.myhealthcare.mongo.startingdata.*;
+import it.unipi.lsmsd.myhealthcare.repository.CityRepository;
+import it.unipi.lsmsd.myhealthcare.repository.ServiceRepository;
+import it.unipi.lsmsd.myhealthcare.repository.StructureRepository;
+import it.unipi.lsmsd.myhealthcare.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import it.unipi.lsmsd.myhealthcare.utility.*;
+import it.unipi.lsmsd.myhealthcare.service.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,32 +25,25 @@ public class MyHealthCareApplication implements CommandLineRunner {
 	public ServiceRepository serviceRepository;
 	@Autowired
 	public CityRepository cityRepository;
+
 	@Autowired
 	public StructureRepository structureRepository;
 	@Autowired
 	public UserRepository userRepository;
-	@Autowired
-	public RoleRepository roleRepository;
-	@Autowired
-	public BookingRepository bookingRepository;
-	@Autowired
-	public BookingStatusRepository bookingStatusRepository;
-	@Autowired
-	public ReviewRepository reviewRepository;
-	public static List<BookingStatus> statuses;
-	public static List<Role> roles;
+	public static MongoConnectionManager mongo;
 	public static List<City> cities;
-	public static List<Service> activeServices;
-	public static Map<String, String> months;
+	public static Map<Integer, String> regions;
+	public static List<String> areas;
+	public static List<Service> services;
+	public static Map<Integer, String> months;
+	public static List<String> hours;
 
 	public static IndexController indexController;
-	public static AdminController adminController;
 	public static UserController userController;
 	public static StructureController structureController;
+	public static AdminController adminController;
 	public static BookingController bookingController;
-	public static final String DOT = "<img src=\"/resources/img/dot.png\" height=\"12\" width=\"12\">";
-	public static final String EMPTY_DOT = "<img src=\"/resources/img/empty_dot.png\" height=\"12\" width=\"12\">";
-
+	public static ReviewController reviewController;
 
 	public static void main(String[] args) {
 		SpringApplication.run(MyHealthCareApplication.class, args);
@@ -62,6 +52,7 @@ public class MyHealthCareApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		properties = new PropertiesManager();
+		mongo = new MongoConnectionManager();
 
 		/* watch the list of collections
 		MongoConnectionManager connection = new MongoConnectionManager(true);
@@ -72,27 +63,25 @@ public class MyHealthCareApplication implements CommandLineRunner {
 		new MongoConnectionManager(true).printStatistics();
 		 */
 
+		Utility.setRegionsAndAreas();
 		Utility.setMonths();
+		Utility.setHours();
 
 		/* populate mongodb
 		StartingData.setup(serviceRepository, cityRepository, structureRepository,
-				userRepository, bookingRepository, roleRepository, bookingStatusRepository,
-				reviewRepository,true,true);
+				userRepository, false, false, false);
 		*/
-		roles = RoleDao.readAll(roleRepository);
-		statuses = BookingStatusDao.readAll(bookingStatusRepository);
+
 		cities = Utility.sortCities(CityDao.readAll(cityRepository));
-		activeServices = Utility.sortServices(ServiceDao.readAllActive(serviceRepository));
+		services = Utility.sortServices(ServiceDao.readAll(serviceRepository));
 
 		indexController = new IndexController();
+		userController = new UserController(userRepository);
 		structureController = new StructureController(
-				cityRepository, structureRepository, serviceRepository, reviewRepository);
-		userController = new UserController(
-				userRepository, cityRepository, structureRepository, serviceRepository, roleRepository);
-		adminController = new AdminController(bookingRepository, structureRepository,
-				cityRepository, serviceRepository);
-		bookingController = new BookingController(bookingRepository, structureRepository, cityRepository,
-				serviceRepository, userRepository, roleRepository, bookingStatusRepository, reviewRepository);
+				cityRepository, structureRepository, serviceRepository);
+		adminController = new AdminController(serviceRepository, structureRepository);
+		bookingController = new BookingController(structureRepository, userRepository);
+		reviewController = new ReviewController(structureRepository, userRepository);
 
 		System.out.println("\nready...\n");
 	}

@@ -2,7 +2,6 @@ package it.unipi.lsmsd.myhealthcare.databaseConnection;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
-import com.mongodb.MongoCommandException;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -10,8 +9,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import it.unipi.lsmsd.myhealthcare.MyHealthCareApplication;
-import it.unipi.lsmsd.myhealthcare.utility.DatabaseStatistics;
-import it.unipi.lsmsd.myhealthcare.utility.PropertiesManager;
+import it.unipi.lsmsd.myhealthcare.service.DatabaseStatistics;
+import it.unipi.lsmsd.myhealthcare.service.PropertiesManager;
 
 import javax.swing.text.Document;
 import java.util.ArrayList;
@@ -22,26 +21,10 @@ public class MongoConnectionManager {
     private static MongoDatabase mongodb;
     private static PropertiesManager properties;
 
-    public MongoConnectionManager(boolean replica) {
+    public MongoConnectionManager() {
         properties = MyHealthCareApplication.properties;
-        if(replica)
-            mongodb = MongoClients.create(new ConnectionString(properties.mongoUriReplica))
-                    .getDatabase(properties.mongoDatabase);
-        else
-            mongodb = MongoClients.create(new ConnectionString(properties.mongoUri))
-                    .getDatabase(properties.mongoDatabase);
-        /*
-        try {
-            mongodb.createCollection(properties.mongoCityCollection);
-            mongodb.createCollection(properties.mongoStructureCollection);
-            mongodb.createCollection(properties.mongoServiceCollection);
-            mongodb.createCollection(properties.mongoBookingStatusCollection);
-            mongodb.createCollection(properties.mongoBookingCollection);
-            mongodb.createCollection(properties.mongoReviewCollection);
-            mongodb.createCollection(properties.mongoUserCollection);
-            mongodb.createCollection(properties.mongoRoleCollection);
-        } catch (MongoCommandException e) {}
-         */
+        mongodb = MongoClients.create(new ConnectionString(properties.mongoUriReplica))
+                .getDatabase(properties.mongoDatabase);
     }
     public void printCollections(){
         System.out.println("Collections found into MongoDB:");
@@ -68,6 +51,18 @@ public class MongoConnectionManager {
 
     public MongoDatabase getDatabase(){
         return mongodb;
+    }
+
+    public MongoCollection getCollection(String collection){
+        return mongodb.getCollection(collection);
+    }
+
+    public MongoCollection getUserCollection(){
+        return getCollection(MyHealthCareApplication.properties.mongoUserCollection);
+    }
+
+    public MongoCollection getStructureCollection(){
+        return getCollection(MyHealthCareApplication.properties.mongoStructureCollection);
     }
 
     public void createIndex(String collection, String field){

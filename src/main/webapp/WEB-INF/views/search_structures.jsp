@@ -9,10 +9,14 @@
 <body>
     <jsp:include page="header.jsp" />
     <div class="subtitle">Structure research</div><br/>
+    <form action="toHomePage" method="post">
+        <input type="hidden" id="userId" name="userId" value=${user.id}>
+        <input type="image" title="BACK" src="/resources/img/back.png"  height="35" width="35"
+            onMouseOver="this.src='/resources/img/back_hover.png';" onMouseOut="this.src='/resources/img/back.png';">
+    </form><br/>
     <div align="center">
         <form action="searchStructures" method="post" onsubmit="return validateSearchStructures()">
             <input type="hidden" id="userId" name="userId" value=${user.id}>
-            <input type="hidden" id="cryptedPassword" name="cryptedPassword" value=${user.password}>
             <table>
                 <tr>
                     <td align="right">city</td>

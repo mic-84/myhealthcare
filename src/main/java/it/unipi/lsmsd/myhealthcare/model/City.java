@@ -5,7 +5,7 @@ import java.util.List;
 
 public class City {
 	private String id;
-	private String code, name, province;
+	private String code, name, province, region;
 	private List<City> neighbours;
 
 	public City(){
@@ -42,6 +42,14 @@ public class City {
 
 	public void setProvince(String province) {
 		this.province = province;
+	}
+
+	public String getRegion() {
+		return region;
+	}
+
+	public void setRegion(String region) {
+		this.region = region;
 	}
 
 	public List<City> getNeighbours() {

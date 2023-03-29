@@ -1,10 +1,8 @@
 package it.unipi.lsmsd.myhealthcare.model;
 
 public class Service {
-	private String id;
-	private String code, name;
-	private Float rate;
-	private boolean active;
+	protected String id;
+	protected String code, name;
 
 	public Service(){}
 
@@ -32,28 +30,7 @@ public class Service {
 		this.name = name;
 	}
 
-	public Float getRate() {
-		return rate;
-	}
-
-	public void setRate(Float rate) {
-		this.rate = rate;
-	}
-	
-	public boolean isActive() {
-		return active;
-	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-
 	public String toString() {
-		return code + " - " + name + " (euro " + rate + ")";
-	}
-
-	public String getGraphicActive(){
-		if(active) return "<img src='/resources/img/check.png'  height='20' width='20'>";
-		else return " ";
+		return code + " - " + name;
 	}
 }

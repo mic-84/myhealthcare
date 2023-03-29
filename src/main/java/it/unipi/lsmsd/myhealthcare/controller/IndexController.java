@@ -2,7 +2,7 @@ package it.unipi.lsmsd.myhealthcare.controller;
 
 import it.unipi.lsmsd.myhealthcare.MyHealthCareApplication;
 import it.unipi.lsmsd.myhealthcare.model.User;
-import it.unipi.lsmsd.myhealthcare.userSession.UserSession;
+import it.unipi.lsmsd.myhealthcare.session.UserSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,10 +23,9 @@ public class IndexController {
     @PostMapping("/toHomePage")
     public String toHomePage(
             @RequestParam("userId") String userId,
-            @RequestParam("cryptedPassword") String cryptedPassword,
             ModelMap model) {
         System.out.println("IndexController.toHomePage");
-        User user = UserSession.getUser(userId, cryptedPassword);
+        User user = UserSession.getUser(userId);
         if(user == null)
             return "index";
         if (user.isEmployee())
@@ -45,10 +44,9 @@ public class IndexController {
     @PostMapping("/toProfilePage")
     public String toProfilePage(
             @RequestParam("userId") String userId,
-            @RequestParam("cryptedPassword") String cryptedPassword,
             ModelMap model) {
         System.out.println("IndexController.toProfilePage");
-        User user = UserSession.getUser(userId, cryptedPassword);
+        User user = UserSession.getUser(userId);
         if(user == null)
             return "index";
         model.addAttribute("user", user);

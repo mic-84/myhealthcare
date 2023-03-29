@@ -11,22 +11,24 @@
     <jsp:include page="header.jsp" />
     <div class="subtitle">Rendered bookings per each structure</div><br/>
     <table>
-        <tr>
-            <th>code</th>
-            <th>structure</th>
-            <th>city</th>
-            <th>quantity</th>
-            <th>amount</th>
-        </tr>
-        <c:forEach items="${list}" var="elem">
-            <tr class="row">
-                <td class="border_table">${elem.structure.aslCode}-${elem.structure.structureCode}</td>
-                <td class="border_table">${elem.structure.name}</td>
-                <td class="border_table">${elem.structure.city}</td>
-                <td class="border_table">${elem.count}</td>
-                <td class="border_table">&euro;&nbsp;<fmt:formatNumber pattern="###,###,###,###.00" value="${elem.cost}" /></td>
+        <tbody class="fixed_table scrollable_tbody">
+            <tr>
+                <th class="th">structure</th>
+                <c:if test="${not empty bookingsPerStructure}">
+                    <th class="th">quantity</th>
+                </c:if>
+                <th class="th">amount</th>
             </tr>
-        </c:forEach>
+            <c:forEach items="${list}" var="elem">
+                <tr class="row">
+                    <td class="border_table">${elem.description}</td>
+                    <c:if test="${not empty bookingsPerStructure}">
+                        <td class="border_table align_right">${elem.count}</td>
+                    </c:if>
+                    <td class="border_table align_right">&euro;&nbsp;<fmt:formatNumber pattern="###,###,###,###.00" value="${elem.cost}" /></td>
+                </tr>
+            </c:forEach>
+        </tbody>
     </table>
 </body>
 </html>

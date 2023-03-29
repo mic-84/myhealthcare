@@ -10,18 +10,22 @@
 <body>
     <jsp:include page="header.jsp" />
     <c:if test="${isEmployee}">
-        <div class="subtitle">Rendered bookings per each user</div><br/>
+        <div class="subtitle">Users with expenditure greater than&nbsp;&euro;&nbsp;${threshold}</div><br/>
+        <form action="getStructure" method="post">
+            <input type="hidden" id="userId" name="userId" value=${user.id}>
+            <input type="hidden" id="id" name="id" value=${structureId}>
+            <input type="image" title="BACK" src="/resources/img/back.png"  height="35" width="35"
+                onMouseOver="this.src='/resources/img/back_hover.png';" onMouseOut="this.src='/resources/img/back.png';">
+        </form><br/>
         <table>
             <tr>
-                <th>user</th>
-                <th>quantity</th>
-                <th>amount</th>
+                <th class="th">user</th>
+                <th class="th">amount</th>
             </tr>
             <c:forEach items="${list}" var="elem">
                 <tr class="row">
-                    <td class="border_table">${elem.user.firstName}&nbsp;${elem.user.lastName}</td>
-                    <td class="border_table">${elem.count}</td>
-                    <td class="border_table">&euro;&nbsp;<fmt:formatNumber pattern="###,###,###,###.00" value="${elem.cost}" /></td>
+                    <td class="border_table">${elem.description}</td>
+                    <td class="border_table align_right">&euro;&nbsp;<fmt:formatNumber pattern="###,###,###,###.00" value="${elem.cost}" /></td>
                 </tr>
             </c:forEach>
         </table>
